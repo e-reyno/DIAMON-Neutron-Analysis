@@ -4,6 +4,8 @@ Created on Fri Aug 26 15:55:42 2022
 
 This file will process both the F_UNFOLD and the rate data from DIAMON spectrometer
 """
+from calendar import day_abbr
+from math import comb
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -153,4 +155,19 @@ def convert_to_ds(data):
     s1 = pd.Series(data_list, index=labels)
     
     return s1
+
+
+def combine_continuous_data_files(dataframes, cum_time=None):
+    combined_dataframe = []
+    for i, dataframe in enumerate(dataframes):
+
+        if cum_time and i != 0:
+
+            last_index = dataframes[i-1].iloc[-1,0]
+            dataframe.iloc[:,0] = last_index + dataframe.iloc[:,0]
+
+        combined_dataframe.append(dataframe)
+    combined_dataframe = pd.concat(combined_dataframe, ignore_index=True)
+
+    return combined_dataframe
 
