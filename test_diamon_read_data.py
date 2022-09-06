@@ -2,7 +2,6 @@
 """
     
 """
-from cgi import test
 import diamon_read_data as drd
 import unittest 
 
@@ -34,7 +33,7 @@ class read_folder_test(unittest.TestCase):
     
     def test_read_folder(self):
         data = drd.read_folder(folder_path)
-        
+
         unfold_object = data[0][0]
         self.assertEqual(unfold_object.dose_rate, 3.014)
 
@@ -47,10 +46,11 @@ class read_folder_test(unittest.TestCase):
 
         out_data = data[1][0]
         self.assertEqual(out_data.iloc[1,0], 39.04)
+        
     
 class convert_to_ds_test(unittest.TestCase):
      
-     def test_convert_to_ds(self):
+    def test_convert_to_ds(self):
          
         data = drd.diamon_data()
         data.file_name = "test"
@@ -83,7 +83,7 @@ class convert_to_ds_test(unittest.TestCase):
         self.assertEqual(ds.loc["file_name"], "test")
         self.assertEqual(ds.loc["time"], 300.1)
          
-     def test_convert_to_ds_file(self):  
+    def test_convert_to_ds_file(self):  
         
         data = drd.read_unfold_file(file_path)
         ds = drd.convert_to_ds(data)
@@ -92,7 +92,13 @@ class convert_to_ds_test(unittest.TestCase):
         self.assertEqual(ds.loc["file_name"], "F_unfold")
         self.assertEqual(ds.loc["time"], 600.18)
     
-
+    def test_convert_to_ds_folder(self):
+        
+        combined_data = drd.read_folder(folder_path)
+        ds = drd.convert_to_ds(combined_data[0][0])
+        self.assertEqual(ds.loc["thermal"], 0.1130)
+        
+        
 class clean_param_test(unittest.TestCase):
     
     def test_clean_param(self):
@@ -104,6 +110,22 @@ class clean_param_test(unittest.TestCase):
         self.assertEqual(clean_line1_uncert, 5.4)
         self.assertEqual(clean_line2, 3.012)
 
+
+class combine_dataframes_test(unittest.TestCase):
+    
+    def test_combine_dataframes(self):
+        
+        data = drd.read_folder(folder_path)
+        
+        out_data = data[1]
+        combined_dataframe = drd.combine_continuous_data_files(out_data)
+        
+        self.assertEqual(combined_dataframe.iloc[-1,0], 886.25)
+        
+        rate_data = data[2]
+        combined_rate_dataframe = drd.combine_continuous_data_files(rate_data, True)
+        
+        self.assertEqual(combined_rate_dataframe.iloc[-1,0],902.59)
 
 if __name__ == '__main__':
     unittest.main()
