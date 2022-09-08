@@ -4,6 +4,8 @@ Created on Fri Aug 26 15:55:42 2022
 
 This file will process both the F_UNFOLD and the rate data from DIAMON spectrometer
 """
+from calendar import day_abbr
+from math import comb
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -49,6 +51,7 @@ def clean_param(line, uncert=None):
     line = clean(line)
     
     if uncert:
+        #uses regular expression package to extract an uncertainty found between a bracket and % symbol
         line[3] = re.findall('\((.*?)%\)', line[3])
         return float(line[0]), float(line[3][0])
     else:
@@ -69,6 +72,10 @@ def read_data_file(path, i, j):
     data = pd.read_csv(path, sep='\t', index_col=False)
     data = data.dropna(axis='columns')
     data = data.drop(data.iloc[:, i:j], axis=1)
+    data = data.replace('\%', '', regex=True)
+    for col in data.columns:
+        if 'un%' in col:
+            data[col]= data[col].astype(float)
     return data
 
     
@@ -147,10 +154,24 @@ def convert_to_ds(data):
     
     data_list = [data.file_name, data.num, data.dose_rate, data.dose_rate_uncert, data.dose_area_product, data.dose_area_product_uncert, data.thermal, data.epi, data.fast, 
                 data.phi, data.phi_uncert, data.count_D1, data.count_D2, data.count_D3, data.count_D4, data.count_D5, data.count_D6,
-                data.count_F, data.count_FL, data.count_FR, data.count_R, data.count_RR, data.count_RL,
-                data.count_time]
+                data.count_F, data.count_FL, data.count_FR, data.count_R, data.count_RR, data.count_RL, data.count_time]
     
     s1 = pd.Series(data_list, index=labels)
     
     return s1
 
+
+def combine_continuous_data_files(dataframes, cum_time=None):
+    combined_dataframe = []
+    for i, dataframe in enumerate(dataframes):
+
+        if cum_time and i != 0:
+
+            last_index = dataframes[i-1].iloc[-1,0]
+            #this aligns the new files time with the previous so they are adjacent
+            dataframe.iloc[:,0] = last_index + dataframe.iloc[:,0]
+
+        combined_dataframe.append(dataframe)
+    combined_dataframe = pd.concat(combined_dataframe, ignore_index=True)
+
+    return combined_dataframe

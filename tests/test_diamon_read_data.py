@@ -96,8 +96,6 @@ class convert_to_ds_test(unittest.TestCase):
         
         combined_data = drd.read_folder(folder_path)
         ds = drd.convert_to_ds(combined_data[0][0])
-        combined_data[0][0] = drd.convert_to_ds(combined_data[0][0])
-        combined_data[0][1] = drd.convert_to_ds(combined_data[0][1])
         self.assertEqual(ds.loc["thermal"], 0.1130)
         
         
