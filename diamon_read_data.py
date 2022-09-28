@@ -4,8 +4,6 @@ Created on Fri Aug 26 15:55:42 2022
 
 This file will process both the F_UNFOLD and the rate data from DIAMON spectrometer
 """
-from calendar import day_abbr
-from math import comb
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -17,7 +15,7 @@ class diamon_data():
      def __init__(self):
         """ define data"""
         self.file_name = ""
-        self.num = 0
+        self.name = 0
         self.dose_rate = 0
         self.dose_rate_uncert = None
         self.dose_area_product = 0
@@ -130,29 +128,32 @@ def read_unfold_file(path):
 
 def read_folder(folder_path):
 
-    data = [[],[],[]]
+    
+    
     folder_list = glob.glob(folder_path)
-    for folder in folder_list:
+    data = [[] for i in range(len(folder_list))]
+    for i, folder in enumerate(folder_list):
         
         files_list = glob.glob(folder+"\*")
         unfold_data = read_unfold_file(files_list[1])
-        unfold_data.num = folder.split("\\")[-1]
-        #out data gives the dose and %energy neutrons as func of time
-        out_data = read_data_file(files_list[3],0,3)
-        #rate data gives all counts as func of time for each detector
-        rate_data = read_data_file(files_list[4],0,1)
-        data[0].append(unfold_data)
-        data[1].append(out_data)
-        data[2].append(rate_data)
+        unfold_data.name = folder.split("\\")[-1]
+        #out data gives the dose and %energy neutrons as func of time in set time intervals (6 measurements)
+        out_data = read_data_file(files_list[2],0,3)
+        #rate data gives all counts as func of time for each detector in set time intervals (6 measurements)
+        rate_data = read_data_file(files_list[3],0,1)
+       
+        data[i].append(unfold_data)
+        data[i].append(out_data)
+        data[i].append(rate_data)
 
     return data
 
     
 def convert_to_ds(data):
-    labels = ("file_name", "num", "dose_rate","dose_rate_uncert", "dose_area_product", "dose_area_prod_uncert", "thermal","epi", "fast", "phi", "phi_uncert",
+    labels = ("file_name", "name", "dose_rate","dose_rate_uncert", "dose_area_product", "dose_area_prod_uncert", "thermal","epi", "fast", "phi", "phi_uncert",
               "D1", "D2", "D3", "D4", "D5", "D6", "F", "FL", "FR", "R", "RR", "RL", "time")
     
-    data_list = [data.file_name, data.num, data.dose_rate, data.dose_rate_uncert, data.dose_area_product, data.dose_area_product_uncert, data.thermal, data.epi, data.fast, 
+    data_list = [data.file_name, data.name, data.dose_rate, data.dose_rate_uncert, data.dose_area_product, data.dose_area_product_uncert, data.thermal, data.epi, data.fast, 
                 data.phi, data.phi_uncert, data.count_D1, data.count_D2, data.count_D3, data.count_D4, data.count_D5, data.count_D6,
                 data.count_F, data.count_FL, data.count_FR, data.count_R, data.count_RR, data.count_RL, data.count_time]
     
