@@ -150,7 +150,19 @@ def direction_bar_plot(dataframe):
     ax.set_xticklabels(dataframe["name"], rotation=60)
     plt.show()
 
-   
+def direction_stack_bar_plot(df):
+    
+    df['sum_dir'] = df [["F", "FL", "FR", "R", "RR", "RL"]].sum(axis=1)
+    df["F_norm"] = df["F"]/df["sum_dir"]
+    df["FL_norm"] = df["FL"]/df["sum_dir"]
+    df["FR_norm"] = df["FR"]/df["sum_dir"]
+    df["R_norm"] = df["R"]/df["sum_dir"]
+    df["RL_norm"] = df["RL"]/df["sum_dir"]
+    df["RR_norm"] = df["RR"]/df["sum_dir"]
+
+    axis = df[["F_norm", "FR_norm", "FL_norm", "R_norm", "RR_norm", "RL_norm"]].plot(kind="bar", stacked=True)
+    fig = axis.get_figure()
+
 def find_spect_peaks(data):
     
     energy_list = []
@@ -205,6 +217,6 @@ stack_bar_plot(unfold_dataframe)
 plot_dose_rate(unfold_dataframe)
 names = [data[0].name for data in all_data]
 plot_detector_counts(all_data[:,2], names)
-
+direction_stack_bar_plot(unfold_dataframe)
 
 
